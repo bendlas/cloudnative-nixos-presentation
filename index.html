@@ -1,49 +1,279 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+    <title>Cloud Native NixOS</title>
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+    <style>
+      .float-right { float: right; }
+      .float-left { float: left; }
+      .display-inline { display: inline; }
+      .bg-white { background-color: white; }
+      .strikethrough { text-decoration: line-through; }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+	<section>
+          <section>
+            <h2>Cloud Native NixOS</h2>
+            <div class="bg-white float-right"><img src="assets/nixos-logo-only-hires.png" width="196px" height="170px" /></div>
+            <div class="bg-white float-left" style="padding-top:25px;padding-bottom:25px"><img src="assets/cloud-native.png" width="196px" /></div>
+            <p>by Herwig Hochleitner</p>
+            <p><a href="https://github.com/bendlas" target="_blank">@bendlas</a></p>
+          </section>
+          <section>
+            <h3>TOC</h3>
+            <ul>
+              <li><a href="#/1">Nix</a> - Packaging</li>
+              <li><a href="#/2">NixOS</a> - Configuration
+                <ul>
+                  <li><a href="#/2/1">nixpkgs</a> - Package Collection</li>
+                </ul>
+              </li>
+              <li><a href="#/3">Deployment Options</a>
+                <ul>
+                  <li><a href="#/3/1">Option 0</a></li>
+                  <li><a href="#/3/2">Channels</a> - Official Deployment</li>
+                  <li><a href="#/3/3">NixOps</a> - Procedural Deployment</li>
+                  <li><a href="#/3/4">DisNix</a> - Declarative Deployment</li>
+                  <li><a href="#/3/5">nix-copy-closure</a> - Ad-Hoc Deployment</li>
+                  <li><a href="#/3/6">rsync</a> - Ad-Hoc Ad-Hoc Deployment</li>
+                </ul>
+              </li>
+              <li><a href="#/4">Docker</a></li>
+            </ul>
+          </section>
+        </section>
+	<section>
+          <h1><a href="https://nixos.org/nix/" target="_blank">Nix</a></h1>
+          <p>is</p>
+          <ul>
+            <li>... a functional, lazy programming language</li>
+            <li>... a functional package manager</li>
+            <li>... an implementation of immutable file sets</li>
+            <li>... a garbage collector</li>
+            <li>... a source of terrible puns in german</li>
+          </ul>
+        </section>
+	<section>
+          <section>
+            <h1><a href="https://nixos.org/nixos/" target="_blank">NixOS</a></h1>
+            <p>is</p>
+            <ul>
+              <li>... a module system for Nix</li>
+              <li>... a documented set of <a href="https://nixos.org/nixos/options.html" target="_blank">options</a></li>
+              <li>... a boot loader manager</li>
+              <li>... a manager for <code>/etc</code></li>
+            </ul>
+          </section>
+	  <section>
+            <h1><a href="https://nixos.org/nixpkgs/" target="_blank">nixpkgs</a></h1>
+            <p>is</p>
+            <ul>
+              <li>... NixOS' standard library (of software packages)</li>
+              <li>... a collection of build recipes (think homebrew)</li>
+              <li><span class="strikethrough">... so huge, that github won't render our <a href="https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/all-packages.nix" target="_blank">TOC</a></span><br/>
+                github seems to have lifted that restriction
+              </li>
+            </ul>
+          </section>
+        </section>
+	<section>
+          <section>
+            <h2>Deployment Options</h2>
+            <ul>
+              <li>Channels</li>
+              <li>NixOps</li>
+              <li>Disnix</li>
+              <li><code>nix-copy-closure</code></li>
+              <li><code>rsync</code></li>
+            </ul>
+          </section>
+          <section>
+            <h3>Option 0</h3>
+            <h4>git</h4>
+            <p>Just update expressions on your NIX_PATH</p>
+            <pre>
+              <code data-trim data-noescape class="bash">
+                echo $NIX_PATH
+                nixpkgs=/var/nixpkgs:nixos=/var/nixpkgs/nixos:nixos-config=/etc/nixos/configuration.nix
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2><a href="https://nixos.org/channels/" target="_blank">Channels</a></h2>
+            <p>Official Distribution Mechanism.<br/> Distribute Nix expressions via HTTP.</p>
+            <p>
+              CI via
+              <a href="https://nixos.org/hydra/" target="_blank">Hydra</a>
+              allows for automatic creation<br> and binary cache
+            </p>
+          </section>
+          <section>
+            <h2><a href="https://nixos.org/nixops/" target="_blank">NixOps</a></h2>
+            <p>Many providers. Remote NixOS, container, vm, aws, gce, azure, digital_ocean, hetzner</p>
+            <pre>
+              <code data-trim data-noescape class="bash">
+                nixops {create,delete,deploy,modify,start,stop,ssh,...}
+              </code>
+              <code data-trim data-noescape class="nix">
+                # machines.nix
+                {
+                  staging =
+                    { ... }: {
+                      imports = [ ./configuration.nix ];
+                      deployment.targetHost = "11.22.33.44";
+                      acme.environment = "staging";
+                    };
+                  # ...
+                }
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2><a href="https://nixos.org/disnix/" target="_blank">Disnix</a></h2>
+            <p>NixOS' - style lifecycle and provision for the cloud</p>
+            <pre>
+              <code data-trim data-noescape class="bash">
+                # Deploy / Update
+                disnix-env -s services.nix -i infrastructure.nix -d distribution.nix
+                # Rollback
+                disnix-env --list-generations
+                   1   2018-02-13 13:22:35
+                   2   2018-02-13 13:30:24   (current)
+                disnix-env --rollback
+                disnix-env --switch-to-generation 1
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2><code>nix-copy-closure</code></h2>
+            <p>Transfer packages between Nix stores</p>
+            <pre>
+              <code data-trim data-noescape class="bash">
+                nix-copy-closure --to root@staging $(which pkg)
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2><code>rsync</code></h2>
+            <p>Transfer packages between non-Nix machines</p>
+            <pre>
+              <code data-trim data-noescape class="bash">
+                rsync -avz \
+                  $(nix-store -qR
+                    $(which pkg)) \
+                  root@staging:/nix/store
+              </code>
+            </pre>
+          </section>
+        </section>
+        <section>
+	  <section>
+            <h1>Docker</h1>
+            <ul>
+              <li class="fragment">Nix <strong>does</strong> conflict-free deployment</li>
+              <li class="fragment">Nix <strong>does</strong> system <a href="https://nixos.org/nixos/options.html#containers" target="_blank">containers</a> based on systemd</li>
+              <li class="fragment">Nix <strong>does</strong> user containers based on <code>unshare</code></li>
+              <li class="fragment">Nix <strong>does not</strong> do overlayfs management</li>
+              <li class="fragment">Nix <strong>does</strong> package <code>docker</code></li>
+              <li class="fragment">NixOS <strong>does</strong> include a <code>docker</code> service</li>
+              <li class="fragment">Nix <strong>can</strong> build rather efficient docker images</li>
+            </ul>
+          </section>
+	  <section>
+            <p>From the <a href="https://nixos.org/nixpkgs/manual/#sec-pkgs-dockerTools" target="_blank">manual</a></p>
+            <pre>
+            <code data-trim data-noescape class="nix">
+              buildImage {
+                name = "redis";
+                tag = "latest";
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+                fromImage = someBaseImage;
+                fromImageName = null;
+                fromImageTag = "latest";
+
+                contents = pkgs.redis;
+                runAsRoot = ''
+                  #!${stdenv.shell}
+                  mkdir -p /data
+                '';
+
+                config = {
+                  Cmd = [ "/bin/redis-server" ];
+                  WorkingDir = "/data";
+                  Volumes = {
+                    "/data" = {};
+                  };
+                };
+              }
+            </code>
+            </pre>
+          </section>
+        </section>
+        <section>
+          <h1>RancherOS</h1>
+          <p>
+            NixOS isn't a ready-made package, and it's not tied to
+            Docker. It does, however, solve many of the same problems.
+          </p>
+          <p>
+            You could conceivably deploy a Kubernetes cluster with
+            Rancher Services via NixOS. Or anything else.
+          </p>
+        </section>
+        <section>
+          <h1>Outro</h1>
+          <h4>More Freestyling</h4>
+          <h4>Thanks!</h4>
+          <h4>Questions?</h4>
+          <ul>
+            <li><a href="assets/nixos-jfp-final.pdf" target="_blank">The original NixOS Paper</a></li>
+            <li><a href="https://nixos.org/" target="_blank">https://nixos.org/</a></li>
+            <li><a href="https://github.com/NixOS/nixpkgs" target="_blank">https://github.com/NixOS/nixpkgs</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+	  dependencies: [
+	      { src: 'plugin/markdown/marked.js' },
+	      { src: 'plugin/markdown/markdown.js' },
+	      { src: 'plugin/notes/notes.js', async: true },
+	      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+	  ]
+      });
+    </script>
+  </body>
 </html>
